@@ -48,7 +48,7 @@ export class RegisterComponent {
     this.loading = true;
     this.errorMessage = '';
     this.authService.register(this.registerForm.value as any).subscribe({
-      next: () => this.router.navigate(['/events']),
+      next: () => this.router.navigate(['/login']),
       error: (err) => {
         this.errorMessage = Array.isArray(err.error?.message)
           ? err.error.message.join(', ')

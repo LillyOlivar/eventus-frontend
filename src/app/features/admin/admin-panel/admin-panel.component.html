@@ -19,12 +19,7 @@
   <div class="tabs">
     <button class="tab-btn" [class.active]="activeTab() === 'events'" (click)="activeTab.set('events')">📅 Eventos</button>
     <button class="tab-btn" [class.active]="activeTab() === 'users'" (click)="activeTab.set('users')">👥 Participantes</button>
-    <button class="tab-btn" [class.active]="activeTab() === 'notifications'" (click)="activeTab.set('notifications')">
-      🔔 Notificaciones
-      @if (notifService.notifications().length > 0) {
-        <span class="tab-badge">{{ notifService.notifications().length }}</span>
-      }
-    </button>
+    
   </div>
 
   <!-- Tab: Eventos -->
@@ -52,7 +47,7 @@
                   <td class="actions-cell">
                     <a [routerLink]="['/events', event.id]" class="btn-sm btn-outline">Ver</a>
                     <a [routerLink]="['/admin/events', event.id, 'edit']" class="btn-sm btn-outline">Editar</a>
-                    <button class="btn-sm btn-warning" (click)="openNotifForm(event)">🔔 Notificar</button>
+                  
                     <button class="btn-sm btn-danger" (click)="deleteEvent(event.id)">Eliminar</button>
                   </td>
                 </tr>
@@ -97,27 +92,7 @@
   }
 
   <!-- Tab: Notificaciones enviadas -->
-  @if (activeTab() === 'notifications') {
-    <div class="section-card">
-      <h2>Historial de notificaciones</h2>
-      @if (notifService.notifications().length === 0) {
-        <div class="empty-state"><p>No hay notificaciones enviadas aún.</p></div>
-      } @else {
-        <div class="notif-history">
-          @for (n of notifService.notifications(); track n.id) {
-            <div class="notif-history-item">
-              <span class="notif-type-icon">{{ n.type === 'date_change' ? '📅' : n.type === 'location_change' ? '📍' : n.type === 'cancellation' ? '❌' : '📢' }}</span>
-              <div>
-                <p class="notif-event">{{ n.eventTitle }}</p>
-                <p class="notif-text">{{ n.message }}</p>
-                <p class="notif-date">{{ n.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
-              </div>
-            </div>
-          }
-        </div>
-      }
-    </div>
-  }
+  
 </div>
 
 <!-- Modal: Enviar notificación -->
