@@ -1,0 +1,102 @@
+<!-- src/app/features/profile/profile.component.html -->
+<div class="page-container">
+  <div class="page-header">
+    <h1>Mi Perfil</h1>
+    <p>Gestiona tu información personal y seguridad</p>
+  </div>
+
+  @if (successMsg()) {
+    <div class="alert alert-success">✅ {{ successMsg() }}</div>
+  }
+  @if (errorMsg()) {
+    <div class="alert alert-error">{{ errorMsg() }}</div>
+  }
+
+  <div class="profile-grid">
+    <!-- Tarjeta de información -->
+    <div class="profile-card info-card">
+      <div class="profile-avatar">
+        <span class="avatar-icon">{{ getUserTypeIcon() }}</span>
+        <div>
+          <h2>{{ auth.currentUser()?.firstName }} {{ auth.currentUser()?.lastName }}</h2>
+          <span class="role-badge">{{ getUserTypeLabel() }}</span>
+        </div>
+      </div>
+
+      <div class="info-list">
+        <div class="info-item">
+          <span class="info-label">📧 Correo</span>
+          <span class="info-value">{{ auth.currentUser()?.email }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">👤 Rol</span>
+          <span class="info-value">{{ getUserTypeLabel() }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">📅 Miembro desde</span>
+          <span class="info-value">{{ auth.currentUser()?.createdAt | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+
+      <div class="quick-links">
+        <a routerLink="/dashboard" class="btn-outline">Ver mis inscripciones</a>
+        <a routerLink="/events" class="btn-outline">Ver eventos</a>
+      </div>
+    </div>
+
+    <div class="profile-forms">
+      <!-- Editar nombre -->
+      <div class="form-card">
+        <h3>✏️ Editar información</h3>
+        <form [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+          <div class="form-group">
+            <label>Nombres</label>
+            <input type="text" formControlName="firstName"
+              [class.error]="isFieldInvalid(profileForm, 'firstName')" />
+            @if (isFieldInvalid(profileForm, 'firstName')) {
+              <span class="error-msg">Mínimo 2 caracteres</span>
+            }
+          </div>
+          <div class="form-group">
+            <label>Apellidos</label>
+            <input type="text" formControlName="lastName"
+              [class.error]="isFieldInvalid(profileForm, 'lastName')" />
+            @if (isFieldInvalid(profileForm, 'lastName')) {
+              <span class="error-msg">Mínimo 2 caracteres</span>
+            }
+          </div>
+          <button type="submit" class="btn-primary" [disabled]="loadingProfile">
+            {{ loadingProfile ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+        </form>
+      </div>
+
+      <!-- Cambiar contraseña -->
+      <div class="form-card">
+        <h3>🔒 Cambiar contraseña</h3>
+        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+          <div class="form-group">
+            <label>Contraseña actual</label>
+            <input type="password" formControlName="currentPassword"
+              [class.error]="isFieldInvalid(passwordForm, 'currentPassword')" />
+            @if (isFieldInvalid(passwordForm, 'currentPassword')) {
+              <span class="error-msg">Requerida</span>
+            }
+          </div>
+          <div class="form-group">
+            <label>Nueva contraseña</label>
+            <input type="password" formControlName="newPassword"
+              [class.error]="isFieldInvalid(passwordForm, 'newPassword')" />
+            @if (isFieldInvalid(passwordForm, 'newPassword')) {
+              <span class="error-msg">Mínimo 8 caracteres con mayúscula, número y símbolo</span>
+            }
+            <span class="field-hint">Debe tener mayúscula, minúscula, número y símbolo (&#64;$!%*?&)</span>
+          </div>
+          <button type="submit" class="btn-primary" [disabled]="loadingPassword">
+            {{ loadingPassword ? 'Actualizando...' : 'Cambiar contraseña' }}
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

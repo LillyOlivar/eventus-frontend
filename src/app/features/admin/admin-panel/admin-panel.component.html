@@ -1,0 +1,153 @@
+<!-- src/app/features/admin/admin-panel/admin-panel.component.html -->
+<div class="page-container">
+  <div class="page-header">
+    <h1>Panel de Administración</h1>
+    <a routerLink="/admin/events/new" class="btn-primary">+ Nuevo evento</a>
+  </div>
+
+  <!-- Stats -->
+  @if (stats) {
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-value">{{ stats.totalEvents }}</div><div class="stat-label">Total eventos</div></div>
+      <div class="stat-card"><div class="stat-value">{{ stats.upcomingEvents }}</div><div class="stat-label">Próximos</div></div>
+      <div class="stat-card"><div class="stat-value">{{ stats.totalUsers }}</div><div class="stat-label">Usuarios</div></div>
+      <div class="stat-card"><div class="stat-value">{{ stats.totalRegistrations }}</div><div class="stat-label">Inscripciones</div></div>
+    </div>
+  }
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'events'" (click)="activeTab.set('events')">📅 Eventos</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'users'" (click)="activeTab.set('users')">👥 Participantes</button>
+    <button class="tab-btn" [class.active]="activeTab() === 'notifications'" (click)="activeTab.set('notifications')">
+      🔔 Notificaciones
+      @if (notifService.notifications().length > 0) {
+        <span class="tab-badge">{{ notifService.notifications().length }}</span>
+      }
+    </button>
+  </div>
+
+  <!-- Tab: Eventos -->
+  @if (activeTab() === 'events') {
+    <div class="section-card">
+      <h2>Gestión de eventos</h2>
+      @if (loading) { <div class="loading-state"><div class="spinner"></div></div> }
+      @if (!loading) {
+        <div class="table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Título</th><th>Categoría</th><th>Fecha inicio</th>
+                <th>Cupos</th><th>Estado</th><th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (event of events; track event.id) {
+                <tr>
+                  <td>{{ event.title }}</td>
+                  <td>{{ event.category }}</td>
+                  <td>{{ event.startDate | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ (event._count?.registrations ?? 0) }} / {{ event.capacity }}</td>
+                  <td><span class="badge status-{{ event.status.toLowerCase() }}">{{ getStatusLabel(event.status) }}</span></td>
+                  <td class="actions-cell">
+                    <a [routerLink]="['/events', event.id]" class="btn-sm btn-outline">Ver</a>
+                    <a [routerLink]="['/admin/events', event.id, 'edit']" class="btn-sm btn-outline">Editar</a>
+                    <button class="btn-sm btn-warning" (click)="openNotifForm(event)">🔔 Notificar</button>
+                    <button class="btn-sm btn-danger" (click)="deleteEvent(event.id)">Eliminar</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Tab: Participantes -->
+  @if (activeTab() === 'users') {
+    <div class="section-card">
+      <h2>Participantes registrados</h2>
+      <div class="table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr><th>Nombre</th><th>Correo</th><th>Tipo</th><th>Inscripciones</th><th>Registrado</th></tr>
+          </thead>
+          <tbody>
+            @for (user of users; track user.id) {
+              <tr>
+                <td><strong>{{ user.firstName }} {{ user.lastName }}</strong></td>
+                <td>
+                  <a [href]="'mailto:' + user.email" class="email-link">{{ user.email }}</a>
+                </td>
+                <td>
+                  <span class="type-badge type-{{ getUserTypeLabel(user).toLowerCase() }}">
+                    {{ getUserTypeLabel(user) === 'Docente' ? '👨‍🏫' : getUserTypeLabel(user) === 'Admin' ? '⚙️' : '🎓' }}
+                    {{ getUserTypeLabel(user) }}
+                  </span>
+                </td>
+                <td>{{ $any(user)._count?.registrations ?? 0 }}</td>
+                <td>{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- Tab: Notificaciones enviadas -->
+  @if (activeTab() === 'notifications') {
+    <div class="section-card">
+      <h2>Historial de notificaciones</h2>
+      @if (notifService.notifications().length === 0) {
+        <div class="empty-state"><p>No hay notificaciones enviadas aún.</p></div>
+      } @else {
+        <div class="notif-history">
+          @for (n of notifService.notifications(); track n.id) {
+            <div class="notif-history-item">
+              <span class="notif-type-icon">{{ n.type === 'date_change' ? '📅' : n.type === 'location_change' ? '📍' : n.type === 'cancellation' ? '❌' : '📢' }}</span>
+              <div>
+                <p class="notif-event">{{ n.eventTitle }}</p>
+                <p class="notif-text">{{ n.message }}</p>
+                <p class="notif-date">{{ n.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Modal: Enviar notificación -->
+@if (showNotifForm()) {
+  <div class="modal-overlay" (click)="showNotifForm.set(false)">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <h3>🔔 Enviar notificación</h3>
+      <p class="modal-subtitle">Evento: <strong>{{ selectedEvent()?.title }}</strong></p>
+      <p class="modal-hint">Esta notificación aparecerá en la campanita de todos los participantes.</p>
+
+      <form [formGroup]="notifForm" (ngSubmit)="sendNotification()">
+        <div class="form-group">
+          <label>Tipo de notificación</label>
+          <select formControlName="type">
+            <option value="date_change">📅 Cambio de fecha/hora</option>
+            <option value="location_change">📍 Cambio de lugar</option>
+            <option value="cancellation">❌ Cancelación</option>
+            <option value="general">📢 Anuncio general</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Mensaje para los participantes</label>
+          <textarea formControlName="message" rows="3"
+            placeholder="Ej: El evento se ha reprogramado para el 20 de agosto a las 10:00am en el Auditorio B"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-outline" (click)="showNotifForm.set(false)">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="notifForm.invalid">Enviar notificación</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

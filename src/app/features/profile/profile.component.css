@@ -1,0 +1,15 @@
+.profile-grid { display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; align-items: start; }
+.info-card { background: var(--white); border-radius: var(--radius-lg); padding: 2rem; border: 1px solid var(--gray-200); box-shadow: var(--shadow); }
+.profile-avatar { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.avatar-icon { font-size: 3rem; background: var(--primary-lt); width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.profile-avatar h2 { font-size: 1.1rem; font-weight: 700; }
+.role-badge { background: var(--primary-lt); color: var(--primary); padding: .2rem .7rem; border-radius: 20px; font-size: .78rem; font-weight: 600; }
+.info-list { display: flex; flex-direction: column; gap: .75rem; margin-bottom: 1.5rem; }
+.info-item { display: flex; flex-direction: column; gap: .2rem; padding: .75rem; background: var(--gray-50); border-radius: var(--radius); }
+.info-label { font-size: .78rem; color: var(--gray-600); font-weight: 500; }
+.info-value { font-size: .92rem; font-weight: 600; color: var(--gray-800); }
+.quick-links { display: flex; flex-direction: column; gap: .5rem; }
+.profile-forms { display: flex; flex-direction: column; gap: 1.5rem; }
+.field-hint { font-size: .78rem; color: var(--gray-400); margin-top: .2rem; }
+.w-full { width: 100%; }
+@media (max-width: 768px) { .profile-grid { grid-template-columns: 1fr; } }

@@ -1,0 +1,96 @@
+<!-- src/app/features/events/event-form/event-form.component.html -->
+<div class="page-container">
+  <div class="form-page-header">
+    <a routerLink="/admin" class="btn-back">← Panel Admin</a>
+    <h1>{{ isEdit ? 'Editar evento' : 'Crear nuevo evento' }}</h1>
+  </div>
+
+  @if (loadingData) {
+    <div class="loading-state"><div class="spinner"></div></div>
+  }
+
+  @if (!loadingData) {
+    <div class="form-card">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label>Título del evento *</label>
+          <input type="text" formControlName="title" placeholder="Ej: Seminario de Inteligencia Artificial"
+            [class.error]="isFieldInvalid('title')" />
+          @if (isFieldInvalid('title')) { <span class="error-msg">Mínimo 5 caracteres</span> }
+        </div>
+
+        <div class="form-group">
+          <label>Descripción *</label>
+          <textarea formControlName="description" rows="4"
+            placeholder="Descripción detallada del evento (mínimo 20 caracteres)"
+            [class.error]="isFieldInvalid('description')"></textarea>
+          @if (isFieldInvalid('description')) { <span class="error-msg">Mínimo 20 caracteres</span> }
+        </div>
+
+        <div class="form-group">
+          <label>Lugar *</label>
+          <input type="text" formControlName="location" placeholder="Ej: Auditorio Principal - Unicauca"
+            [class.error]="isFieldInvalid('location')" />
+          @if (isFieldInvalid('location')) { <span class="error-msg">El lugar es requerido</span> }
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fecha y hora de inicio *</label>
+            <input type="datetime-local" formControlName="startDate"
+              [class.error]="isFieldInvalid('startDate')" />
+          </div>
+          <div class="form-group">
+            <label>Fecha y hora de fin *</label>
+            <input type="datetime-local" formControlName="endDate"
+              [class.error]="isFieldInvalid('endDate')" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Categoría *</label>
+            <select formControlName="category">
+              @for (cat of categories; track cat) {
+                <option [value]="cat">{{ cat }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Capacidad (personas) *</label>
+            <input type="number" formControlName="capacity" min="1"
+              [class.error]="isFieldInvalid('capacity')" />
+            @if (isFieldInvalid('capacity')) { <span class="error-msg">Mínimo 1 persona</span> }
+          </div>
+        </div>
+
+        @if (isEdit) {
+          <div class="form-group">
+            <label>Estado</label>
+            <select formControlName="status">
+              @for (s of statuses; track s) {
+                <option [value]="s">{{ s }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <div class="form-group">
+          <label>URL de imagen (opcional)</label>
+          <input type="url" formControlName="imageUrl" placeholder="https://..." />
+        </div>
+
+        @if (error) {
+          <div class="alert alert-error">{{ error }}</div>
+        }
+
+        <div class="form-actions">
+          <a routerLink="/admin" class="btn-outline">Cancelar</a>
+          <button type="submit" class="btn-primary" [disabled]="loading">
+            {{ loading ? 'Guardando...' : (isEdit ? 'Actualizar evento' : 'Crear evento') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</div>

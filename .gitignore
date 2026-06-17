@@ -1,0 +1,19 @@
+# dist
+/dist
+
+# Node
+/node_modules
+
+# env
+.env
+.env.local
+
+# Angular
+/.angular/cache
+
+# IDE
+.idea
+.vscode
+*.suo
+*.ntvs*
+.DS_Store

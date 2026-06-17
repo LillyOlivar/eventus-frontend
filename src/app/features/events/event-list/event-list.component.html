@@ -1,0 +1,93 @@
+<!-- src/app/features/events/event-list/event-list.component.html -->
+
+<!-- Hero section con imagen de fondo -->
+<section class="hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <h1>Eventos Académicos<br><span>Universidad del Cauca</span></h1>
+    <p>Descubre seminarios, talleres, conferencias y hackathons. Aprende, conecta y crece.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><strong>{{ events.length }}</strong><span>Eventos</span></div>
+      <div class="hero-stat"><strong>4</strong><span>Categorías</span></div>
+      <div class="hero-stat"><strong>100%</strong><span>Gratis</span></div>
+    </div>
+  </div>
+  <div class="hero-images">
+    <div class="hero-img-card" style="background-image: url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80')"></div>
+    <div class="hero-img-card hero-img-mid" style="background-image: url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=400&q=80')"></div>
+    <div class="hero-img-card" style="background-image: url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80')"></div>
+  </div>
+</section>
+
+<div class="page-container">
+  <!-- Filtros -->
+  <div class="filters-bar">
+    <div class="filters-left">
+      <h2>Próximos eventos</h2>
+      <span class="results-count">{{ events.length }} resultados</span>
+    </div>
+    <div class="filters-right">
+      <select [(ngModel)]="selectedCategory" (change)="onFilter()">
+        <option value="">Todas las categorías</option>
+        @for (cat of categories; track cat) { <option [value]="cat">{{ cat }}</option> }
+      </select>
+      <select [(ngModel)]="selectedStatus" (change)="onFilter()">
+        @for (s of statuses; track s.value) { <option [value]="s.value">{{ s.label }}</option> }
+      </select>
+      @if (selectedCategory || selectedStatus) {
+        <button class="btn-outline btn-sm" (click)="clearFilters()">✕ Limpiar</button>
+      }
+    </div>
+    @if (authService.isAdmin()) {
+      <a routerLink="/admin/events/new" class="btn-primary">+ Crear evento</a>
+    }
+  </div>
+
+  @if (loading) { <div class="loading-state"><div class="spinner"></div><p>Cargando eventos...</p></div> }
+  @if (error) { <div class="alert alert-error">{{ error }}</div> }
+
+  @if (!loading && !error) {
+    @if (events.length === 0) {
+      <div class="empty-state">
+        <p style="font-size:3rem">📭</p>
+        <p>No hay eventos con los filtros seleccionados.</p>
+        <button class="btn-outline" (click)="clearFilters()">Ver todos los eventos</button>
+      </div>
+    } @else {
+      <div class="events-grid">
+        @for (event of events; track event.id) {
+          <div class="event-card" [routerLink]="['/events', event.id]">
+            <div class="event-img-wrap">
+              @if (event.imageUrl) {
+                <img [src]="event.imageUrl" [alt]="event.title" class="event-img" />
+              } @else {
+                <div class="event-img-placeholder cat-{{ event.category.toLowerCase() }}">
+                  <span class="cat-emoji">{{ getCategoryEmoji(event.category) }}</span>
+                  <span class="cat-name">{{ event.category }}</span>
+                </div>
+              }
+              <span class="event-status-badge badge-{{ event.status.toLowerCase() }}">{{ getStatusLabel(event.status) }}</span>
+            </div>
+            <div class="event-body">
+              <span class="category-tag">{{ event.category }}</span>
+              <h3>{{ event.title }}</h3>
+              <p class="event-desc">{{ event.description | slice:0:110 }}...</p>
+              <div class="event-details">
+                <span>📍 {{ event.location }}</span>
+                <span>📅 {{ event.startDate | date:'dd MMM yyyy, HH:mm' }}</span>
+              </div>
+              <div class="event-footer">
+                <div class="spots-bar">
+                  <div class="spots-fill"
+                    [style.width.%]="((event._count?.registrations ?? 0) / event.capacity) * 100"
+                    [class.full]="eventsService.getAvailableSpots(event) === 0"></div>
+                </div>
+                <span class="spots-text">{{ eventsService.getAvailableSpots(event) }} cupos disponibles</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

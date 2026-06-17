@@ -1,0 +1,50 @@
+<!-- src/app/features/dashboard/dashboard.component.html -->
+<div class="page-container">
+  <div class="page-header">
+    <h1>Mi Panel</h1>
+    <p>Bienvenido, {{ authService.currentUser()?.firstName }} {{ authService.currentUser()?.lastName }}</p>
+  </div>
+
+  <div class="dashboard-card">
+    <h2>Mis inscripciones</h2>
+
+    @if (loading) {
+      <div class="loading-state"><div class="spinner"></div></div>
+    }
+
+    @if (!loading) {
+      @if (registrations.length === 0) {
+        <div class="empty-state">
+          <p>No tienes inscripciones activas.</p>
+          <a routerLink="/events" class="btn-primary">Ver eventos disponibles</a>
+        </div>
+      } @else {
+        <div class="registrations-list">
+          @for (reg of registrations; track reg.id) {
+            <div class="registration-item">
+              <div class="reg-info">
+                <h3>{{ reg.event?.title }}</h3>
+                <p>📅 {{ reg.event?.startDate | date:'dd/MM/yyyy HH:mm' }}</p>
+                <p>📍 {{ reg.event?.location }}</p>
+                <span class="status-badge status-{{ reg.event?.status?.toLowerCase() }}">
+                  {{ getStatusLabel(reg.event?.status || '') }}
+                </span>
+                @if (reg.attended) {
+                  <span class="badge-attended">✅ Asistencia confirmada</span>
+                }
+              </div>
+              <div class="reg-actions">
+                <a [routerLink]="['/events', reg.eventId]" class="btn-outline btn-sm">Ver evento</a>
+                @if (reg.event?.status === 'UPCOMING') {
+                  <button class="btn-danger btn-sm" (click)="cancelRegistration(reg.eventId)">
+                    Cancelar
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

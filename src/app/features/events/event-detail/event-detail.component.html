@@ -1,0 +1,109 @@
+<!-- src/app/features/events/event-detail/event-detail.component.html -->
+<div class="page-container">
+  @if (loading) {
+    <div class="loading-state"><div class="spinner"></div><p>Cargando evento...</p></div>
+  }
+
+  @if (error) {
+    <div class="alert alert-error">{{ error }}</div>
+  }
+
+  @if (event && !loading) {
+    <div class="detail-header">
+      <a routerLink="/events" class="btn-back">← Volver a eventos</a>
+
+      @if (authService.isAdmin()) {
+        <div class="admin-actions">
+          <a [routerLink]="['/admin/events', event.id, 'edit']" class="btn-outline">Editar</a>
+          <button class="btn-danger" (click)="deleteEvent()">Eliminar</button>
+        </div>
+      }
+    </div>
+
+    <div class="detail-card">
+      @if (event.imageUrl) {
+        <img [src]="event.imageUrl" [alt]="event.title" class="detail-img" />
+      }
+
+      <div class="detail-body">
+        <div class="detail-meta">
+          <span class="category-tag">{{ event.category }}</span>
+          <span class="status-badge status-{{ event.status.toLowerCase() }}">
+            {{ getStatusLabel(event.status) }}
+          </span>
+        </div>
+
+        <h1>{{ event.title }}</h1>
+        <p class="detail-desc">{{ event.description }}</p>
+
+        <div class="detail-info-grid">
+          <div class="info-item">
+            <span class="info-icon">📍</span>
+            <div>
+              <strong>Lugar</strong>
+              <p>{{ event.location }}</p>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">📅</span>
+            <div>
+              <strong>Inicio</strong>
+              <p>{{ event.startDate | date:'EEEE dd/MM/yyyy, HH:mm' }}</p>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">🏁</span>
+            <div>
+              <strong>Fin</strong>
+              <p>{{ event.endDate | date:'EEEE dd/MM/yyyy, HH:mm' }}</p>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon">👥</span>
+            <div>
+              <strong>Cupos disponibles</strong>
+              <p>{{ eventsService.getAvailableSpots(event) }} de {{ event.capacity }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Capacity bar -->
+        <div class="capacity-bar">
+          <div
+            class="capacity-fill"
+            [style.width.%]="((event._count?.registrations ?? 0) / event.capacity) * 100"
+            [class.full]="eventsService.getAvailableSpots(event) === 0"
+          ></div>
+        </div>
+
+        @if (actionMessage) {
+          <div class="alert" [class.alert-success]="isRegistered" [class.alert-error]="!isRegistered">
+            {{ actionMessage }}
+          </div>
+        }
+
+        <!-- Actions -->
+        <div class="detail-actions">
+          @if (!authService.isLoggedIn()) {
+            <p>
+              <a routerLink="/login">Inicia sesión</a> para inscribirte en este evento.
+            </p>
+          } @else if (!authService.isAdmin()) {
+            @if (isRegistered) {
+              <div class="registered-badge">✅ Inscrito en este evento</div>
+              <button class="btn-danger" (click)="cancel()" [disabled]="actionLoading">
+                {{ actionLoading ? 'Cancelando...' : 'Cancelar inscripción' }}
+              </button>
+            } @else if (canRegister()) {
+              <button class="btn-primary" (click)="register()" [disabled]="actionLoading">
+                {{ actionLoading ? 'Inscribiendo...' : 'Inscribirme al evento' }}
+              </button>
+            } @else if (eventsService.getAvailableSpots(event) === 0) {
+              <div class="alert alert-warning">Sin cupos disponibles</div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
